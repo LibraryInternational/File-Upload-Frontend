@@ -2,7 +2,7 @@
 /**
 * Plugin Name: File Upload Frontend Wordpress Plugin
 * Plugin URI: http://www.library.international/
-* Description: Display File Upload using a shortcode [library_frontend_file_upload] to insert in a page or post
+* Description: Display File Upload using a shortcode [frontend_file_upload] to insert in a page or post
 * Version: 1.0
 * Text Domain: file-upload-frontend-library
 * Author: Library International
