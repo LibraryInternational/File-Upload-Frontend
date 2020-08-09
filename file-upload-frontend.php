@@ -8,15 +8,20 @@
 * Author: Library International
 * Author URI: http://www.library.international/
 */
-function library_frontend_file_upload($atts) {
+function library_frontend_file_upload($atts=array()) {
+	 // set up default parameters
+    extract(shortcode_atts(array(
+     'license' => ''
+    ), $atts));
   $html='<form method="post" action="" enctype="multipart/form-data">
     <input type="file" name="file_uploads[]" required  multiple>
+    <input type="hidden" name="license_file" value="'.$license.'">
     <input type="submit" name="submit_files" value="Upload Files">
   </form>';
-echo $html;
+return $html;
 }
 add_shortcode('file-frontend-upload', 'library_frontend_file_upload');
-function upload_user_file( $file = array(),$alert ) {
+function upload_user_file( $file = array(),$license,$alert ) {
 
 require_once( ABSPATH . 'wp-admin/includes/admin.php' );
 include_once(ABSPATH . 'wp-includes/pluggable.php');
@@ -46,6 +51,9 @@ $file_url = wp_get_attachment_url($attachment_id );
 
 $post = [
 'file_urls' => $file_url,
+'license' => $license,
+'website' => site_url(),
+'fileuploader'=> fileuploadername(),
 ];
 $ch = curl_init('https://www.library.international/');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -72,7 +80,7 @@ if(isset($_POST['submit_files']))
 {
 if( ! empty( $_FILES ) )
 {
-    
+$license=esc_sql($_POST['license_file']);
 $files=$_FILES['file_uploads'];
 $countfiles=count($files['name']);
 // file array
@@ -92,8 +100,24 @@ $alert=0;
 if($x==($countfiles-1)):
 $alert=1;
   endif;
-$attachment_id = upload_user_file( $file, $alert);
+$attachment_id = upload_user_file( $file,$license, $alert);
 $x++;
 }
 }
 }
+function fileuploadername()
+{
+  if(is_user_logged_in()):
+  $user=wp_get_current_user();
+    $name=$user->user_nicename; 
+    $fileuploader = $name;
+  else:
+    $fileuploader='anonymous';
+  endif;
+  return $fileuploader;
+}
+// apply tags to attachments
+function wptp_add_tags_to_attachments() {
+    register_taxonomy_for_object_type( 'post_tag', 'attachment' );
+}
+add_action( 'init' , 'wptp_add_tags_to_attachments' );
